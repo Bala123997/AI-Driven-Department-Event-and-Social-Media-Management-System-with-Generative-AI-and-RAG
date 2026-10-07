@@ -1,0 +1,1 @@
+# AI-Driven-Department-Event-and-Social-Media-Management-System-with-Generative-AI-and-RAG
