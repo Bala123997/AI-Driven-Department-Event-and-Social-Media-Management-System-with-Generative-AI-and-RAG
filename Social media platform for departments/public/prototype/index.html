@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>KARE CSE — Department Social Media Management System</title>
+<meta name="description" content="Role-based prototype for the KARE CSE Department Social Media Management System: faculty approvals, coordinator post creation, admin management." />
+<link rel="stylesheet" href="css/style.css" />
+<style>
+  #screen-login .login-page {
+    border-top: 1px solid #dde5ee !important;
+  }
+  #screen-login .login-center .events-panel,
+  #screen-login .login-center .landing-templates {
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  #screen-login .login-center .event-poster {
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+  }
+  #screen-login .login-center .event-poster .poster-top {
+    border-bottom: 0 !important;
+  }
+  #screen-login .login-center .ev-list {
+    gap: 18px !important;
+  }
+</style>
+</head>
+<body>
+
+<!-- ==================== 1. LOGIN ==================== -->
+<section id="screen-login" class="screen active">
+  <div class="login-page" id="loginPage" style="border-top: 1px solid #dde5ee;">
+    <div class="login-visual" aria-hidden="true">
+      <img src="images/event-management.jpg" alt="" />
+      <div class="login-visual-shade"></div>
+      <div class="login-visual-copy">
+        <strong>KARE CSE</strong>
+        <span>Department Social Media System</span>
+      </div>
+    </div>
+    <!-- compact sign-in control; the form opens in the centre when selected -->
+    <form class="login-mini" id="loginForm">
+      <button type="button" class="login-trigger" id="loginTrigger" aria-expanded="false" aria-controls="loginFields">
+        <span>Login</span>
+      </button>
+      <div class="login-fields" id="loginFields">
+        <div class="field"><label for="loginId">Email / User ID</label><input type="text" id="loginId" placeholder="Email or User ID" /></div>
+        <div class="field"><label for="loginPass">Password</label><input type="password" id="loginPass" placeholder="••••••••" /></div>
+        <div class="field">
+          <label for="loginRole">Login As</label>
+          <select id="loginRole">
+            <option value="faculty">Faculty</option>
+            <option value="coordinator" selected>Student Coordinator</option>
+            <option value="admin">Admin</option>
+            <option value="general">General</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block btn-sm">LOGIN</button>
+        <p class="hint">Faculty and coordinators must use their assigned accounts.</p>
+        <button type="button" class="register-link" id="registerTrigger">Register as General User</button>
+      </div>
+    </form>
+
+    <button type="button" class="calendar-trigger" id="calendarTrigger" aria-expanded="false" aria-controls="loginCalendar" title="View calendar">
+      <span class="ui-icon icon-calendar" aria-hidden="true"></span><span>Calendar</span>
+    </button>
+
+    <aside class="login-calendar events-panel" id="loginCalendar" aria-label="Current and next month event calendar" hidden>
+      <div class="ep-head">
+        <h3>Calendar</h3>
+        <button type="button" class="calendar-close" id="calendarClose" aria-label="Close calendar">&times;</button>
+      </div>
+      <div class="login-calendar-months" id="loginCalendarMonths"></div>
+    </aside>
+
+    <!-- centre stage: upcoming events -->
+    <div class="login-center">
+      <div class="brand">
+        <h1>KARE CSE</h1>
+        <h2>Department Event Manager</h2>
+      </div>
+
+      <div class="events-panel" style="border: 0; box-shadow: none; background: transparent;">
+        <div class="ep-head">
+          <h3>Upcoming Events</h3>
+        </div>
+        <div class="ev-list" id="loginEvents"></div>
+      </div>
+      <div class="events-panel landing-templates" style="border: 0; box-shadow: none; background: transparent;">
+        <div class="ep-head">
+          <h3>Predefined Event Templates</h3>
+        </div>
+        <div class="tpl-grid">
+          <div class="tpl"><div class="thumb" style="background:linear-gradient(135deg,#0b1f3a,#0e9594)">WORKSHOP</div><div class="body"><b>Workshop Poster</b><p>Title + speaker + QR</p></div></div>
+          <div class="tpl"><div class="thumb" style="background:linear-gradient(135deg,#12325c,#4a7fc1)">HACKATHON</div><div class="body"><b>Hackathon Teaser</b><p>Bold countdown layout</p></div></div>
+          <div class="tpl"><div class="thumb" style="background:linear-gradient(135deg,#7a2d0b,#f0a202)">PLACEMENT</div><div class="body"><b>Placement Drive</b><p>Company logo + eligibility</p></div></div>
+          <div class="tpl"><div class="thumb" style="background:linear-gradient(135deg,#14713f,#6cc4a1)">ACHIEVEMENT</div><div class="body"><b>Student Achievement</b><p>Photo + accolade badge</p></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ==================== APP SHELL ==================== -->
+<section id="screen-app" class="screen">
+  <header class="topbar">
+    <div class="tb-left"><span class="mark">KARE</span> CSE SOCIAL MEDIA SYSTEM</div>
+    <div class="tb-right">
+      <div class="who"><span class="avatar" id="whoAvatar">B</span><span id="whoName">Bala</span></div>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="role-tag" id="roleTag">Panel</div>
+      <div id="navList"></div>
+      <div class="logout">
+        <button class="nav-item" onclick="logout()"><span>Logout</span></button>
+      </div>
+    </aside>
+
+    <main class="main">
+
+      <!-- ============ FACULTY : DASHBOARD ============ -->
+      <div class="page role-page" id="page-faculty-dashboard">
+        <div class="page-head"><h2>Faculty Dashboard</h2><p>Review and approve content submitted by student coordinators.</p></div>
+        <div class="stats">
+          <div class="stat amber"><div class="label">Pending</div><div class="value" id="fStatPending">00</div><div class="delta">Awaiting your review</div></div>
+          <div class="stat green"><div class="label">Approved</div><div class="value" id="fStatApproved">00</div><div class="delta">This semester</div></div>
+          <div class="stat red"><div class="label">Rejected</div><div class="value" id="fStatRejected">00</div><div class="delta">Sent back for edits</div></div>
+          <div class="stat navy"><div class="label">Avg. Review Time</div><div class="value">4h</div><div class="delta">Target &lt; 12h</div></div>
+        </div>
+        <div class="card">
+          <div class="section-title"><h3>Pending Approvals</h3><span class="badge pending">Action required</span></div>
+          <div id="fPendingList"></div>
+        </div>
+        <div class="card dashboard-calendar" data-calendar="faculty"></div>
+        <div class="card">
+          <h3>Recently Reviewed</h3>
+          <table><thead><tr><th>Post</th><th>Coordinator</th><th>Event date</th><th>Status</th></tr></thead><tbody id="fHistory"></tbody></table>
+        </div>
+      </div>
+
+      <!-- ============ FACULTY : APPROVALS ============ -->
+      <div class="page role-page" id="page-faculty-approvals">
+        <div class="page-head"><h2>Approvals</h2><p>Every submission waiting for faculty sign-off.</p></div>
+        <div class="card"><div id="fPendingList2"></div><div class="empty" id="fApprovalsNote">Open a post from the Dashboard list to review the poster, caption and event details.</div></div>
+        <div class="card">
+          <h3>Approval History</h3>
+          <table><thead><tr><th>Post</th><th>Coordinator</th><th>Event date</th><th>Status</th></tr></thead><tbody id="fHistory2"></tbody></table>
+        </div>
+      </div>
+
+      <!-- ============ COORDINATOR : DASHBOARD ============ -->
+      <div class="page role-page" id="page-coordinator-dashboard">
+        <div class="page-head"><h2>Coordinator Dashboard</h2><p>Create event promotions and track their approval status.</p></div>
+        <div class="stats">
+          <div class="stat navy"><div class="label">Drafts</div><div class="value" id="cStatDrafts">00</div><div class="delta">Not submitted yet</div></div>
+          <div class="stat amber"><div class="label">Pending</div><div class="value" id="cStatPending">00</div><div class="delta">With faculty</div></div>
+          <div class="stat green"><div class="label">Approved</div><div class="value" id="cStatApproved">00</div><div class="delta">Published / scheduled</div></div>
+          <div class="stat"><div class="label">Total Likes</div><div class="value" id="cStatLikes">0</div><div class="delta">From approved events</div></div>
+        </div>
+        <div class="card">
+          <div class="section-title"><h3>Recent Posts</h3><button class="btn btn-primary btn-sm" onclick="goTo('create')">New Post</button></div>
+          <div id="cRecent"></div>
+        </div>
+        <div class="card dashboard-calendar" data-calendar="coordinator"></div>
+      </div>
+
+      <!-- ============ GENERAL : DASHBOARD ============ -->
+      <div class="page role-page" id="page-general-dashboard">
+        <div class="page-head"><h2>Upcoming Events</h2><p>View approved department events and the shared calendar.</p></div>
+        <div class="card"><h3>Upcoming Events</h3><div class="ev-list general-events" id="generalEvents"></div></div>
+        <div class="card" id="googleCalendarCard">
+          <div class="section-title"><h3>Google Calendar</h3><span class="badge draft" id="googleCalendarStatus">Not connected</span></div>
+          <p id="googleCalendarAccount" style="margin:0 0 14px;color:var(--muted)">Connect your Google account to add registered events to your personal calendar.</p>
+          <button type="button" class="btn btn-primary" id="connectGoogleCalendarButton">CONNECT GOOGLE CALENDAR</button>
+          <button type="button" class="btn btn-ghost" id="disconnectGoogleCalendarButton" hidden>DISCONNECT</button>
+        </div>
+      </div>
+
+      <div class="page role-page" id="page-general-chat">
+        <div class="page-head"><h2>KARE CSE Assistant</h2><p>Ask questions using approved department information.</p></div>
+        <div class="rag-chat-layout">
+          <section class="card rag-chat-card">
+            <div class="section-title"><h3>Department Assistant</h3><span class="badge approved">RAG</span></div>
+            <div class="rag-chat-messages" id="ragChatMessages" aria-live="polite"></div>
+            <form id="ragChatForm" class="rag-chat-form">
+              <input id="ragChatInput" type="text" placeholder="When is the next hackathon?" maxlength="280" autocomplete="off" />
+              <button type="submit" class="btn btn-primary" id="ragChatSubmit">Ask</button>
+            </form>
+            <button type="button" class="btn btn-ghost rag-clear-button" id="ragClearHistory">Clear chat history</button>
+          </section>
+          <aside class="card rag-history-card">
+            <div class="section-title"><h3>Chat History</h3><span id="ragHistoryCount" class="badge draft">0 chats</span></div>
+            <div id="ragHistoryList" class="rag-history-list"></div>
+          </aside>
+        </div>
+      </div>
+
+      <div class="page role-page" id="page-general-registrations">
+        <div class="page-head"><h2>Registered Events</h2><p>Events you registered for after scanning their poster QR code.</p></div>
+        <div class="card"><h3>My Registrations</h3><div class="ev-list general-events" id="registeredEvents"></div></div>
+      </div>
+
+      <!-- ============ COORDINATOR : CREATE POST ============ -->
+      <div class="page role-page" id="page-coordinator-create">
+        <div class="page-head"><h2>Create New Post</h2><p>Fill in the event details, attach a poster and send it for faculty approval.</p></div>
+        <div class="card-grid">
+          <form class="card" id="createForm">
+            <h3>Event Details</h3>
+            <div class="form-grid">
+              <div class="field">
+                <label for="npType">Post Type</label>
+                <select id="npType"><option>Workshop</option><option>Seminar</option><option>Hackathon</option><option>Placement</option><option>Event</option><option>Achievement</option></select>
+              </div>
+              <div class="field"><label for="npVenue">Venue</label><input id="npVenue" placeholder="Seminar Hall" /></div>
+              <div class="field full"><label for="npTitle">Event Title</label><input id="npTitle" placeholder="AI &amp; Machine Learning Workshop" /></div>
+              <div class="field"><label for="npDate">Date</label><input type="date" id="npDate" value="2026-08-30" /></div>
+              <div class="field"><label for="npTime">Time</label><input id="npTime" placeholder="10:00 AM" value="10:00 AM" /></div>
+              <div class="field full"><div class="field-label-row"><label for="npDesc">Description</label><button type="button" class="ai-generate-button" id="generateDescriptionButton" aria-label="Generate AI description"><span class="ai-sparkle" aria-hidden="true">✦</span><span class="ai-button-label">Generate</span></button></div><textarea id="npDesc" placeholder="Join our exciting workshop on AI and ML..."></textarea><div id="descriptionResult" class="caption-result" hidden aria-live="polite"></div></div>
+              <div class="field full"><label for="npFile">Upload Poster</label><input type="file" id="npFile" /></div>
+              <div class="field full"><div class="field-label-row"><label for="npCaption">Caption</label><button type="button" class="ai-generate-button" id="generateCaptionButton" aria-label="Generate AI caption"><span class="ai-sparkle" aria-hidden="true">✦</span><span class="ai-button-label">Generate</span></button></div><textarea id="npCaption" placeholder="Join us for the AI &amp; ML workshop..."></textarea><div id="captionResult" class="caption-result" hidden aria-live="polite"></div></div>
+            </div>
+            <div class="form-actions">
+              <button type="button" class="btn btn-ghost" onclick="submitPost(null,'draft')">SAVE DRAFT</button>
+              <button type="button" class="approval-check-button" id="checkSimilarityButton"><span class="approval-check-icon" aria-hidden="true">✓</span><span class="ai-button-label">Check similarity</span></button>
+              <button type="submit" class="btn btn-primary">SUBMIT FOR APPROVAL</button>
+            </div>
+            <div id="similarityResult" class="similarity-result" hidden aria-live="polite"></div>
+          </form>
+          <div>
+            <div class="card">
+              <h3>Poster Preview</h3>
+              <div class="poster"><div><b>Your Event Poster</b><small id="selectedTemplate">Template: Workshop Poster v2</small></div></div>
+            </div>
+            <div class="card">
+              <h3>Submission Checklist</h3>
+              <ul class="activity">
+                <li><span class="dot"></span><div>Department branding applied<small>Logo + colour palette</small></div></li>
+                <li><span class="dot"></span><div>Event date, time and venue filled<small>Required for the calendar</small></div></li>
+                <li><span class="dot"></span><div>Caption within 2,200 characters<small>Instagram limit</small></div></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ COORDINATOR : MY POSTS ============ -->
+      <div class="page role-page" id="page-coordinator-myposts">
+        <div class="page-head"><h2>My Posts</h2><p>All content you have created this semester.</p></div>
+        <div class="card"><table><thead><tr><th>Post</th><th>Type</th><th>Event date</th><th>Status</th><th>Action</th></tr></thead><tbody id="cMyPosts"></tbody></table></div>
+      </div>
+
+      <!-- ============ COORDINATOR : PENDING ============ -->
+      <div class="page role-page" id="page-coordinator-pending">
+        <div class="page-head"><h2>Pending Approval</h2><p>These posts are waiting for faculty review.</p></div>
+        <div class="card"><div id="cPending"></div></div>
+      </div>
+
+      <!-- ============ COORDINATOR : REJECTED ============ -->
+      <div class="page role-page" id="page-coordinator-rejected">
+        <div class="page-head"><h2>Rejected Posts</h2><p>Edit the content based on faculty remarks and resubmit.</p></div>
+        <div class="card"><div id="cRejected"></div></div>
+      </div>
+
+      <!-- ============ ADMIN : DASHBOARD ============ -->
+      <div class="page role-page" id="page-admin-dashboard">
+        <div class="page-head"><h2>Admin Dashboard</h2><p>System-wide view of users, content and scheduling.</p></div>
+        <div class="stats">
+          <div class="stat navy"><div class="label">Users</div><div class="value" id="aStatUsers">48</div><div class="delta">Across all roles</div></div>
+          <div class="stat"><div class="label">Posts</div><div class="value" id="aStatPosts">325</div><div class="delta">All time</div></div>
+          <div class="stat amber"><div class="label">Pending</div><div class="value" id="aStatPending">12</div><div class="delta">Awaiting approval</div></div>
+          <div class="stat green"><div class="label">Scheduled</div><div class="value" id="aStatScheduled">27</div><div class="delta">Next 30 days</div></div>
+        </div>
+        <div class="card-grid">
+          <div class="card"><h3>Recent System Activity</h3><ul class="activity" id="aActivity"></ul></div>
+          <div class="card">
+            <h3>User Distribution</h3>
+            <div class="bar-row"><div class="bl"><span>Coordinators</span><span>28</span></div><div class="bar"><span style="width:58%"></span></div></div>
+            <div class="bar-row"><div class="bl"><span>Faculty</span><span>12</span></div><div class="bar navy"><span style="width:25%"></span></div></div>
+            <div class="bar-row"><div class="bl"><span>Placement Staff</span><span>5</span></div><div class="bar gold"><span style="width:11%"></span></div></div>
+            <div class="bar-row"><div class="bl"><span>Admins</span><span>3</span></div><div class="bar"><span style="width:6%"></span></div></div>
+          </div>
+        </div>
+        <div class="card dashboard-calendar" data-calendar="admin"></div>
+      </div>
+
+      <!-- ============ ADMIN : USERS ============ -->
+      <div class="page role-page" id="page-admin-users">
+        <div class="page-head"><h2>User Management</h2><p>Create accounts and assign roles for the department.</p></div>
+        <div class="card">
+          <div class="toolbar">
+            <input id="userSearch" placeholder="Search by name or role..." />
+            <div class="spacer"></div>
+            <button class="btn btn-primary" onclick="openAddUser()">+ ADD NEW USER</button>
+          </div>
+          <table><thead><tr><th>Name</th><th>Role</th><th>Department</th><th>Status</th><th>Action</th></tr></thead><tbody id="aUsers"></tbody></table>
+        </div>
+      </div>
+
+      <!-- ============ ADMIN : DEPARTMENTS ============ -->
+      <div class="page role-page" id="page-admin-departments">
+        <div class="page-head"><h2>Departments</h2><p>Each department has its own coordinators, templates and approval chain.</p></div>
+        <div class="card">
+          <table><thead><tr><th>Department</th><th>Coordinators</th><th>Faculty in-charge</th><th>Posts</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td><b>Computer Science &amp; Engineering</b></td><td>12</td><td>Faculty In-charge</td><td>184</td><td><span class="badge active">Active</span></td></tr>
+            <tr><td><b>Information Technology</b></td><td>7</td><td>Dr. Kavitha</td><td>62</td><td><span class="badge active">Active</span></td></tr>
+            <tr><td><b>Electronics &amp; Communication</b></td><td>5</td><td>Dr. Anand</td><td>48</td><td><span class="badge active">Active</span></td></tr>
+            <tr><td><b>Mechanical Engineering</b></td><td>4</td><td>Dr. Ramesh</td><td>31</td><td><span class="badge draft">Onboarding</span></td></tr>
+          </tbody></table>
+        </div>
+      </div>
+
+      <!-- ============ ADMIN : ALL POSTS ============ -->
+      <div class="page role-page" id="page-admin-allposts">
+        <div class="page-head"><h2>All Posts</h2><p>Every post in the system, across coordinators and departments.</p></div>
+        <div class="card">
+          <div class="toolbar">
+            <input id="postSearch" placeholder="Search posts or creators..." />
+            <select id="postFilter">
+              <option value="all">All statuses</option>
+              <option value="draft">Draft</option>
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="scheduled">Scheduled</option>
+              <option value="rejected">Rejected</option>
+            </select>
+          </div>
+          <table><thead><tr><th>Post</th><th>Created by</th><th>Event date</th><th>Status</th></tr></thead><tbody id="aPosts"></tbody></table>
+        </div>
+      </div>
+
+      <!-- ============ ADMIN : NOTIFICATIONS ============ -->
+      <div class="page role-page" id="page-admin-notifications">
+        <div class="page-head"><h2>Notifications</h2><p>System alerts and workflow events.</p></div>
+        <div class="card">
+          <div class="section-title"><h3>Notification history</h3><button type="button" class="btn btn-ghost notification-clear-button" data-clear-notifications>Clear notifications</button></div>
+          <ul class="activity" id="notificationsList"></ul>
+        </div>
+      </div>
+
+      <div class="page role-page" id="page-shared-notifications">
+        <div class="page-head"><h2>Notifications</h2><p>Updates about posts, approvals, rejections, schedules and user accounts.</p></div>
+        <div class="card"><div class="section-title"><h3>Notification history</h3><button type="button" class="btn btn-ghost notification-clear-button" data-clear-notifications>Clear notifications</button></div><ul class="activity" id="notificationsListShared"></ul></div>
+      </div>
+
+      <!-- ============ SHARED : CALENDAR ============ -->
+      <div class="page role-page" id="page-shared-calendar">
+        <div class="page-head"><h2>Content Calendar</h2><p>Shared schedule for this month and next month. Select any date to add or edit an event.</p></div>
+        <div class="card dashboard-calendar" data-calendar="shared"></div>
+        <div class="card">
+          <h3>Legend</h3>
+          <div class="pi-actions"><span class="badge scheduled">Scheduled</span><span class="badge pending">Pending approval</span><span class="badge approved">Approved</span></div>
+        </div>
+      </div>
+
+      <!-- ============ SHARED : TEMPLATES ============ -->
+      <div class="page role-page" id="page-shared-templates">
+        <div class="page-head"><h2>Poster Templates</h2><p>Open any poster to view the complete design or download the image file.</p></div>
+        <div class="card"><div class="tpl-grid poster-template-grid" id="templateGallery"></div></div>
+      </div>
+
+      <!-- ============ SHARED : ANALYTICS ============ -->
+      <div class="page role-page" id="page-shared-analytics">
+        <div class="page-head"><h2>Analytics</h2><p>Engagement across department social media handles (live likes from approved events).</p></div>
+        <div class="stats">
+          <div class="stat"><div class="label">Total Reach</div><div class="value" id="analyticsReach">0</div><div class="delta">Based on event likes</div></div>
+          <div class="stat green"><div class="label">Engagement Rate</div><div class="value" id="analyticsEngagement">0.0%</div><div class="delta">Above 5% target</div></div>
+          <div class="stat amber"><div class="label">Posts Published</div><div class="value" id="analyticsPublished">0</div><div class="delta">Approved events</div></div>
+          <div class="stat navy"><div class="label">Followers</div><div class="value" id="analyticsFollowers">0</div><div class="delta">Live estimate</div></div>
+        </div>
+        <div class="card-grid">
+          <div class="card">
+            <h3>Reach by Platform</h3>
+            <div id="analyticsPlatforms"></div>
+          </div>
+          <div class="card">
+            <h3>Top Performing Content</h3>
+            <table><thead><tr><th>Post</th><th>Type</th><th>Likes</th></tr></thead><tbody id="analyticsTopPosts"></tbody></table>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</section>
+
+<!-- ==================== MODALS ==================== -->
+<div class="modal" id="reviewModal">
+  <div class="modal-box">
+    <header><h3 id="rvTitle">REVIEW POST</h3><button class="x" onclick="closeReview()">Close</button></header>
+    <div class="body" id="rvBody"></div>
+    <footer>
+      <button class="btn btn-danger" onclick="decide('rejected')">REJECT</button>
+      <button class="btn btn-success" onclick="decide('approved')">APPROVE</button>
+    </footer>
+  </div>
+</div>
+
+<div class="modal" id="successModal">
+  <div class="modal-box" style="max-width:420px">
+    <div class="body" style="text-align:center;padding:34px 26px">
+      <div style="font-size:46px">Success</div>
+      <h3 style="margin:12px 0 6px">Post submitted successfully!</h3>
+      <p style="color:var(--muted);margin:0 0 20px;font-size:14px">Waiting for faculty approval. You'll be notified once it is reviewed.</p>
+      <button class="btn btn-primary btn-block" onclick="closeSuccess()">VIEW PENDING POSTS</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="userModal">
+  <div class="modal-box" style="max-width:480px">
+    <header><h3>ADD NEW USER</h3><button class="x" onclick="closeAddUser()">Close</button></header>
+    <form class="body" id="userForm">
+      <div class="field"><label for="auName">Name</label><input id="auName" required placeholder="Full name" /></div>
+      <div class="field"><label for="auEmail">Email</label><input type="email" id="auEmail" required placeholder="name@kare.edu" /></div>
+      <div class="field"><label for="auRole">Role</label><select id="auRole"><option>Student Coordinator</option><option>Faculty</option><option>Placement Staff</option><option>Admin</option></select></div>
+      <div class="field"><label for="auDept">Department</label><select id="auDept"><option>CSE</option><option>IT</option><option>ECE</option><option>MECH</option></select></div>
+      <div class="field"><label for="auPass">Password</label><input type="password" id="auPass" required minlength="6" placeholder="At least 6 characters" /></div>
+      <button type="submit" class="btn btn-primary btn-block">CREATE USER</button>
+    </form>
+  </div>
+</div>
+
+<div class="modal" id="registerModal">
+  <div class="modal-box" style="max-width:420px">
+    <header><h3>REGISTER AS GENERAL USER</h3><button class="x" type="button" id="registerClose">Close</button></header>
+    <form class="body" id="registerForm">
+      <div class="field"><label for="registerName">Full name</label><input id="registerName" required placeholder="Your full name" /></div>
+      <div class="field"><label for="registerEmail">Email</label><input type="email" id="registerEmail" required placeholder="you@example.com" /></div>
+      <div class="field"><label for="registerPassword">Password</label><input type="password" id="registerPassword" required minlength="6" placeholder="At least 6 characters" /></div>
+      <div class="field"><label for="registerConfirmPassword">Confirm password</label><input type="password" id="registerConfirmPassword" required minlength="6" placeholder="Repeat your password" /></div>
+      <button type="submit" class="btn btn-primary btn-block">CREATE GENERAL ACCOUNT</button>
+    </form>
+  </div>
+</div>
+
+<div class="modal" id="eventRegistrationModal">
+  <div class="modal-box" style="max-width:520px">
+    <header><h3 id="eventRegistrationTitle">REGISTER FOR EVENT</h3><button class="x" type="button" onclick="closeEventRegistration()">Close</button></header>
+    <div class="body">
+      <p id="scannerMessage" style="margin-top:0;color:var(--muted)"><b>Registration QR assistant:</b> it scans all QR codes, ignores WhatsApp or social-group links, and opens the event registration form.</p>
+      <img id="scannerPoster" class="review-poster-image" alt="Event poster to scan" hidden />
+      <input id="scannerFile" type="file" accept="image/*" class="field" />
+      <div id="scannerStatus" class="empty" style="margin-top:14px">Waiting for a poster image.</div>
+    </div>
+    <footer><button class="btn btn-ghost" type="button" onclick="closeEventRegistration()">CANCEL</button><button class="btn btn-primary" type="button" id="scannerScanButton">SCAN QR CODE</button><button class="btn btn-primary" type="button" id="openRegistrationFormButton" hidden>OPEN REGISTRATION FORM</button><button class="btn btn-success" type="button" id="registrationCompleteButton" hidden>I COMPLETED REGISTRATION</button></footer>
+  </div>
+</div>
+
+<div class="modal" id="templatePreviewModal">
+  <div class="modal-box template-preview-box">
+    <header><h3 id="templatePreviewTitle">Poster preview</h3><button class="x" type="button" onclick="closeTemplatePreview()">Close</button></header>
+    <div class="body template-preview-body">
+      <div class="template-preview-fallback" id="templatePreviewFallback">Poster image not found</div>
+      <img id="templatePreviewImage" class="template-preview-image" alt="" />
+    </div>
+    <footer>
+      <button class="btn btn-outline" type="button" onclick="closeTemplatePreview()">Close</button>
+      <a class="btn btn-primary" id="templateDownload" download>DOWNLOAD POSTER</a>
+    </footer>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script src="js/script.js"></script>
+</body>
+</html>

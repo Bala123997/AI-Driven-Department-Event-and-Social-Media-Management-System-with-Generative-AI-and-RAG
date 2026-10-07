@@ -1,0 +1,14 @@
+node_modules/
+
+.env
+.env.*
+!.env.example
+
+.output/
+.tanstack/
+.wrangler/
+dist/
+build/
+
+.chroma-venv/
+chroma_data/

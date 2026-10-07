@@ -1,0 +1,7 @@
+node_modules/
+.output/
+.tanstack/
+.wrangler/
+.env
+dist/
+build/

@@ -1,0 +1,27 @@
+[
+  {
+    "id": "notification-check-event",
+    "question": "When is the Notification Check Event and where will it be held?",
+    "relevantTitleContains": ["Notification Check Event"]
+  },
+  {
+    "id": "cmos-fundamentals",
+    "question": "Tell me the date and venue for CMOS Fundamentals.",
+    "relevantTitleContains": ["CMOS Fundamentals"]
+  },
+  {
+    "id": "tech-apti-xplore",
+    "question": "What is the schedule for Tech-Apti Xplore?",
+    "relevantTitleContains": ["Tech-Apti Xplore"]
+  },
+  {
+    "id": "pitch-deck",
+    "question": "Where and when is the Pitch Deck event?",
+    "relevantTitleContains": ["Pitch Deck"]
+  },
+  {
+    "id": "rural-tech",
+    "question": "What details are available about Rural Tech?",
+    "relevantTitleContains": ["Rural Tech"]
+  }
+]
